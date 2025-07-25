@@ -45,24 +45,17 @@ class _CalendarWidgetState extends State<CalendarWidget> {
   Widget _buildDayCell(
     DateTime day, {
     bool isToday = false,
-    bool isSelected = false,
     bool isOutside = false,
     int weekday = 1,
   }) {
     final events = _getEventsForDay(day);
     final hasEvents = events.isNotEmpty;
-
     final borderColor = Colors.grey.shade400;
+    final burntOrange = Color(0xFFCC5500); // burnt orange hex color
 
     return Container(
       decoration: BoxDecoration(
-        color: isSelected
-            ? Colors.indigo.shade100
-            : isToday
-            ? Colors.indigo.shade50
-            : isOutside
-            ? Colors.white.withOpacity(.4) // faded background for outside days
-            : Colors.white,
+        color: isOutside ? Colors.white.withOpacity(0.4) : Colors.white,
         border: Border(
           top: BorderSide(color: borderColor, width: 0.5),
           bottom: BorderSide(color: borderColor, width: 0.5),
@@ -79,14 +72,27 @@ class _CalendarWidgetState extends State<CalendarWidget> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.end,
         children: [
-          Text(
-            '${day.day}',
-            style: TextStyle(
-              fontWeight: FontWeight.bold,
-              fontSize: 16,
-              color: isOutside
-                  ? Colors.black.withOpacity(0.2) // faded text for outside days
-                  : Colors.black,
+          Container(
+            width: 30,
+            height: 30,
+            alignment: Alignment.center,
+            decoration: isToday
+                ? BoxDecoration(
+                    color: burntOrange, // burnt orange
+                    shape: BoxShape.circle,
+                  )
+                : null,
+            child: Text(
+              '${day.day}',
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 16,
+                color: isToday
+                    ? Colors.white
+                    : isOutside
+                    ? Colors.black.withOpacity(0.4)
+                    : Colors.black,
+              ),
             ),
           ),
           if (hasEvents)
@@ -99,11 +105,7 @@ class _CalendarWidgetState extends State<CalendarWidget> {
                   return Text(
                     timeText.isNotEmpty ? '$timeText ${e.title}' : e.title,
                     style: TextStyle(
-                      color: isOutside
-                          ? Colors.black.withOpacity(
-                              0.4,
-                            ) // faded events text too
-                          : Colors.black,
+                      color: isOutside ? Colors.black.withOpacity(0.2) : Colors.black,
                     ),
                   );
                 }).toList(),
@@ -130,7 +132,7 @@ class _CalendarWidgetState extends State<CalendarWidget> {
             firstDay: DateTime.utc(2020, 1, 1),
             lastDay: DateTime.utc(2099, 12, 31),
             focusedDay: _focusedDay,
-            selectedDayPredicate: (day) => isSameDay(_selectedDay, day),
+            selectedDayPredicate: (_) => false,
             onDaySelected: (selectedDay, focusedDay) {
               setState(() {
                 _selectedDay = selectedDay;
@@ -147,6 +149,7 @@ class _CalendarWidgetState extends State<CalendarWidget> {
               isTodayHighlighted: true,
               defaultTextStyle: TextStyle(fontSize: 12),
               weekendTextStyle: TextStyle(color: Colors.redAccent),
+
             ),
             headerStyle: HeaderStyle(
               formatButtonVisible: false,
@@ -160,7 +163,7 @@ class _CalendarWidgetState extends State<CalendarWidget> {
               defaultBuilder: (context, day, focusedDay) =>
                   _buildDayCell(day, weekday: day.weekday),
               selectedBuilder: (context, day, focusedDay) =>
-                  _buildDayCell(day, isSelected: true, weekday: day.weekday),
+                  _buildDayCell(day, weekday: day.weekday),
               todayBuilder: (context, day, focusedDay) =>
                   _buildDayCell(day, isToday: true, weekday: day.weekday),
               outsideBuilder: (context, day, focusedDay) =>
