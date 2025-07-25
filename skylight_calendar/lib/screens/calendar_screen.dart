@@ -102,7 +102,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
           // Main Content
           Expanded(
             child: Container(
-              padding: const EdgeInsets.all(16.0),
+
               child: getScreen(selectedIndex),
             ),
           ),
