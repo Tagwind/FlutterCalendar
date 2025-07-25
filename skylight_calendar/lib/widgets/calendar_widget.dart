@@ -3,19 +3,35 @@ import 'package:table_calendar/table_calendar.dart';
 import 'package:intl/intl.dart';
 import '../data/dummy_events.dart';
 
+// class CalendarEvent {
+//   final String title;
+//   final DateTime date;
+//
+//   CalendarEvent({required this.title, required this.date});
+// }
+
+// final dummyEvents = {
+//   DateTime.utc(2025, 7, 21): [
+//     CalendarEvent(title: "Doctor Appointment", date: DateTime.utc(2025, 7, 21)),
+//     CalendarEvent(title: "Grocery Pickup", date: DateTime.utc(2025, 7, 21)),
+//   ],
+//   DateTime.utc(2025, 7, 23): [
+//     CalendarEvent(title: "Team Meeting", date: DateTime.utc(2025, 7, 23)),
+//   ],
+// };
+
 class CalendarWidget extends StatefulWidget {
   @override
-  _CalendarWidgetState createState() => _CalendarWidgetState();
+  State<CalendarWidget> createState() => _CalendarWidgetState();
 }
 
 class _CalendarWidgetState extends State<CalendarWidget> {
-  DateTime _focusedDay = DateTime.now();
+  DateTime _focusedDay = DateTime.utc(2025, 7, 21);
   DateTime? _selectedDay;
 
   List<CalendarEvent> _getEventsForDay(DateTime day) {
-    final normalized = DateTime.utc(day.year, day.month, day.day);
-
-    final events = dummyEvents.where((event) {
+    final normalizedDay = DateTime.utc(day.year, day.month, day.day);
+    return dummyEvents.where((event) {
       final start = DateTime.utc(
         event.startDate.year,
         event.startDate.month,
@@ -26,132 +42,21 @@ class _CalendarWidgetState extends State<CalendarWidget> {
         event.effectiveEndDate.month,
         event.effectiveEndDate.day,
       );
-      return normalized.isAtSameMomentAs(start) ||
-          (normalized.isAfter(start) && normalized.isBefore(end)) ||
-          normalized.isAtSameMomentAs(end);
+      return !normalizedDay.isBefore(start) && !normalizedDay.isAfter(end);
     }).toList();
-
-    print('Checking events for $normalized: ${events.length} found');
-    return events;
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.white,
-      appBar: AppBar(
-        title: Text('Skylight Calendar'),
-        backgroundColor: Colors.indigo,
-      ),
-      body: Column(
-        children: [
-          Expanded(
-            child: LayoutBuilder(
-              builder: (context, constraints) {
-                final totalHeight = constraints.maxHeight;
-                final headerHeight =
-                    totalHeight / 6 / 2; // half of a normal row
-                final dayRowHeight = (totalHeight - headerHeight) / 5;
-
-                return SizedBox(
-                  width: double.infinity,
-                  child: TableCalendar<CalendarEvent>(
-                    startingDayOfWeek: StartingDayOfWeek.sunday,
-                    firstDay: DateTime.utc(2020, 1, 1),
-                    lastDay: DateTime.utc(2099, 12, 31),
-                    focusedDay: _focusedDay,
-                    selectedDayPredicate: (day) => isSameDay(_selectedDay, day),
-                    onDaySelected: (selectedDay, focusedDay) {
-                      setState(() {
-                        _selectedDay = selectedDay;
-                        _focusedDay = focusedDay;
-                      });
-                    },
-                    calendarFormat: CalendarFormat.month,
-                    rowHeight: dayRowHeight,
-                    daysOfWeekHeight: headerHeight,
-                    eventLoader: _getEventsForDay,
-                    calendarStyle: CalendarStyle(
-                      outsideDaysVisible: false,
-                      isTodayHighlighted: false,
-                      defaultTextStyle: TextStyle(fontSize: 12),
-                      weekendTextStyle: TextStyle(color: Colors.redAccent),
-                    ),
-                    headerStyle: HeaderStyle(
-                      formatButtonVisible: false,
-                      titleCentered: true,
-                      titleTextStyle: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    calendarBuilders: CalendarBuilders<CalendarEvent>(
-                      defaultBuilder: (context, day, focusedDay) {
-                        int weekday = day.weekday; // 1=Mon .. 7=Sun
-                        return _buildDayCell(day, weekday: weekday);
-                      },
-                      selectedBuilder: (context, day, focusedDay) {
-                        int weekday = day.weekday;
-                        return _buildDayCell(
-                          day,
-                          isSelected: true,
-                          weekday: weekday,
-                        );
-                      },
-                      todayBuilder: (context, day, focusedDay) {
-                        int weekday = day.weekday;
-                        return _buildDayCell(
-                          day,
-                          isToday: true,
-                          weekday: weekday,
-                        );
-                      },
-                      outsideBuilder: (context, day, focusedDay) {
-                        int weekday = day.weekday;
-                        return _buildDayCell(
-                          day,
-                          isOutside: true,
-                          weekday: weekday,
-                        );
-                      },
-                      dowBuilder: (context, day) {
-                        return Container(
-                          decoration: BoxDecoration(
-                            border: Border(
-                              right: BorderSide(
-                                color: Colors.grey.shade400,
-                                width: 0.5,
-                              ),
-                              bottom: BorderSide(
-                                color: Colors.grey.shade400,
-                                width: 0.5,
-                              ),
-                            ),
-                          ),
-                          alignment: Alignment.centerRight,
-                          padding: const EdgeInsets.symmetric(horizontal: 6),
-                          child: Text(
-                            DateFormat.E().format(day),
-                            style: const TextStyle(
-                              fontSize: 24,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        );
-                      },
-                      // 🚫 Disable the default marker (black dot)
-                      markerBuilder: (context, day, events) {
-                        return const SizedBox.shrink(); // disables marker
-                      },
-                    ),
-                  ),
-                );
-              },
-            ),
-          ),
-        ],
-      ),
-    );
+  String formatEventTime(CalendarEvent event) {
+    final dt = event.startDate;
+    if (dt.hour == 0 && dt.minute == 0) {
+      return ''; // No time set, omit it
+    } else {
+      final time = TimeOfDay.fromDateTime(dt);
+      final hour = time.hourOfPeriod == 0 ? 12 : time.hourOfPeriod;
+      final suffix = time.period == DayPeriod.am ? 'AM' : 'PM';
+      final minutes = time.minute.toString().padLeft(2, '0');
+      return '$hour:$minutes $suffix';
+    }
   }
 
   Widget _buildDayCell(
@@ -159,74 +64,133 @@ class _CalendarWidgetState extends State<CalendarWidget> {
     bool isToday = false,
     bool isSelected = false,
     bool isOutside = false,
-    required int weekday, // 1=Monday ... 7=Sunday
+    int weekday = 1,
   }) {
     final events = _getEventsForDay(day);
-    final textColor = isOutside
-        ? Colors.grey
-        : isSelected
-        ? Colors.white
-        : Colors.black;
+    final hasEvents = events.isNotEmpty;
 
-    bool isFarLeftCell = (day.weekday == DateTime.sunday); // Sunday is 7
-    bool isFarRightCell = (day.weekday == DateTime.saturday); // Saturday is 6
+    final borderColor = Colors.grey.shade400;
 
-    BorderSide defaultBorder = BorderSide(
-      color: Colors.grey.shade400,
-      width: 0.5,
-    );
-
-    return SizedBox.expand(
-      child: Container(
-        margin: EdgeInsets.zero,
-        padding: const EdgeInsets.all(4),
-        decoration: BoxDecoration(
-          color: isSelected
-              ? Colors.indigo
-              : isToday
-              ? Colors.indigo.withOpacity(0.1)
-              : Colors.transparent,
-          border: Border(
-            top: defaultBorder,
-            bottom: defaultBorder,
-            left: isFarLeftCell ? BorderSide.none : defaultBorder,
-            right: isFarRightCell ? BorderSide.none : defaultBorder,
-          ),
+    return Container(
+      decoration: BoxDecoration(
+        color: isSelected
+            ? Colors.indigo.shade100
+            : isToday
+            ? Colors.indigo.shade50
+            : Colors.white,
+        border: Border(
+          top: BorderSide(color: borderColor, width: 0.5),
+          bottom: BorderSide(color: borderColor, width: 0.5),
+          left: weekday == DateTime.sunday
+              ? BorderSide.none
+              : BorderSide(color: borderColor, width: 0.5),
+          right: weekday == DateTime.saturday
+              ? BorderSide.none
+              : BorderSide(color: borderColor, width: 0.5),
         ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              '${day.day}',
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 12,
-                color: textColor,
+      ),
+      padding: const EdgeInsets.only(right: 4.0, top: 4.0),
+      alignment: Alignment.topRight,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.end,
+        children: [
+          Text('${day.day}', style: TextStyle(fontSize: 12)),
+          if (hasEvents)
+            Padding(
+              padding: const EdgeInsets.only(top: 4.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: events.map((e) {
+                  final timeText = formatEventTime(e);
+                  return Text(timeText.isNotEmpty ? '$timeText ${e.title}' : e.title,);
+                }).toList(),
               ),
             ),
-            const SizedBox(height: 2),
-            ...events
-                .take(3)
-                .map(
-                  (e) => Text(
-                    '${DateFormat.Hm().format(e.startDate)} ${e.title}${!isSameDay(e.startDate, e.endDate) ? " ↔" : ""}',
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                      fontSize: 10,
-                      color: textColor.withOpacity(0.9),
+        ],
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final screenHeight = MediaQuery.of(context).size.height;
+    final headerHeight = screenHeight / 6 / 2;
+    final dayRowHeight = (screenHeight - headerHeight) / 5;
+
+    return Scaffold(
+      backgroundColor: Colors.white,
+      appBar: AppBar(title: Text('Skylight Calendar')),
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.only(bottom: 16.0),
+          child: TableCalendar<CalendarEvent>(
+            firstDay: DateTime.utc(2020, 1, 1),
+            lastDay: DateTime.utc(2099, 12, 31),
+            focusedDay: _focusedDay,
+            selectedDayPredicate: (day) => isSameDay(_selectedDay, day),
+            onDaySelected: (selectedDay, focusedDay) {
+              setState(() {
+                _selectedDay = selectedDay;
+                _focusedDay = focusedDay;
+              });
+            },
+            calendarFormat: CalendarFormat.month,
+            startingDayOfWeek: StartingDayOfWeek.sunday,
+            rowHeight: dayRowHeight,
+            daysOfWeekHeight: headerHeight,
+            eventLoader: _getEventsForDay,
+            calendarStyle: CalendarStyle(
+              outsideDaysVisible: false,
+              isTodayHighlighted: false,
+              defaultTextStyle: TextStyle(fontSize: 12),
+              weekendTextStyle: TextStyle(color: Colors.redAccent),
+            ),
+            headerStyle: HeaderStyle(
+              formatButtonVisible: false,
+              titleCentered: true,
+              titleTextStyle: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            calendarBuilders: CalendarBuilders<CalendarEvent>(
+              defaultBuilder: (context, day, focusedDay) =>
+                  _buildDayCell(day, weekday: day.weekday),
+              selectedBuilder: (context, day, focusedDay) =>
+                  _buildDayCell(day, isSelected: true, weekday: day.weekday),
+              todayBuilder: (context, day, focusedDay) =>
+                  _buildDayCell(day, isToday: true, weekday: day.weekday),
+              outsideBuilder: (context, day, focusedDay) =>
+                  _buildDayCell(day, isOutside: true, weekday: day.weekday),
+              markerBuilder: (context, day, events) =>
+                  const SizedBox.shrink(), // No black dots
+              dowBuilder: (context, day) {
+                return Container(
+                  decoration: BoxDecoration(
+                    border: Border(
+                      right: BorderSide(
+                        color: Colors.grey.shade400,
+                        width: 0.5,
+                      ),
+                      bottom: BorderSide(
+                        color: Colors.grey.shade400,
+                        width: 0.5,
+                      ),
                     ),
                   ),
-                ),
-            if (events.length > 3)
-              Text(
-                '+${events.length - 3} more',
-                style: TextStyle(
-                  fontSize: 9,
-                  fontStyle: FontStyle.italic,
-                  color: textColor.withOpacity(0.7),
-                ),
-              ),
-          ],
+                  alignment: Alignment.centerRight,
+                  padding: const EdgeInsets.symmetric(horizontal: 6),
+                  child: Text(
+                    DateFormat.E().format(day),
+                    style: const TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
         ),
       ),
     );

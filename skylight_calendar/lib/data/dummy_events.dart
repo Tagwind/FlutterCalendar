@@ -26,7 +26,7 @@ class CalendarEvent {
 final List<CalendarEvent> dummyEvents = [
   CalendarEvent(
     title: "Vacation",
-    startDate: DateTime.utc(2025, 7, 21),
+    startDate: DateTime.utc(2025, 7, 21, 9, 30),
   ),
   CalendarEvent(
     title: "Doctor Appointment",
