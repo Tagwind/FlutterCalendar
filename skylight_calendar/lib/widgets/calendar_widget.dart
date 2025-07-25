@@ -105,7 +105,9 @@ class _CalendarWidgetState extends State<CalendarWidget> {
                   return Text(
                     timeText.isNotEmpty ? '$timeText ${e.title}' : e.title,
                     style: TextStyle(
-                      color: isOutside ? Colors.black.withOpacity(0.2) : Colors.black,
+                      color: isOutside
+                          ? Colors.black.withOpacity(0.2)
+                          : Colors.black,
                     ),
                   );
                 }).toList(),
@@ -128,73 +130,77 @@ class _CalendarWidgetState extends State<CalendarWidget> {
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.only(bottom: 16.0),
-          child: TableCalendar<CalendarEvent>(
-            firstDay: DateTime.utc(2020, 1, 1),
-            lastDay: DateTime.utc(2099, 12, 31),
-            focusedDay: _focusedDay,
-            selectedDayPredicate: (_) => false,
-            onDaySelected: (selectedDay, focusedDay) {
-              setState(() {
-                _selectedDay = selectedDay;
-                _focusedDay = focusedDay;
-              });
-            },
-            calendarFormat: CalendarFormat.month,
-            startingDayOfWeek: StartingDayOfWeek.sunday,
-            rowHeight: dayRowHeight,
-            daysOfWeekHeight: headerHeight,
-            eventLoader: _getEventsForDay,
-            calendarStyle: CalendarStyle(
-              outsideDaysVisible: true,
-              isTodayHighlighted: true,
-              defaultTextStyle: TextStyle(fontSize: 12),
-              weekendTextStyle: TextStyle(color: Colors.redAccent),
-
-            ),
-            headerStyle: HeaderStyle(
-              formatButtonVisible: false,
-              titleCentered: true,
-              titleTextStyle: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-            calendarBuilders: CalendarBuilders<CalendarEvent>(
-              defaultBuilder: (context, day, focusedDay) =>
-                  _buildDayCell(day, weekday: day.weekday),
-              selectedBuilder: (context, day, focusedDay) =>
-                  _buildDayCell(day, weekday: day.weekday),
-              todayBuilder: (context, day, focusedDay) =>
-                  _buildDayCell(day, isToday: true, weekday: day.weekday),
-              outsideBuilder: (context, day, focusedDay) =>
-                  _buildDayCell(day, isOutside: true, weekday: day.weekday),
-              markerBuilder: (context, day, events) =>
-                  const SizedBox.shrink(), // No black dots
-              dowBuilder: (context, day) {
-                return Container(
-                  decoration: BoxDecoration(
-                    border: Border(
-                      right: BorderSide(
-                        color: Colors.grey.shade400,
-                        width: 0.5,
-                      ),
-                      bottom: BorderSide(
-                        color: Colors.grey.shade400,
-                        width: 0.5,
-                      ),
-                    ),
-                  ),
-                  alignment: Alignment.centerRight,
-                  padding: const EdgeInsets.symmetric(horizontal: 6),
-                  child: Text(
-                    DateFormat.E().format(day),
-                    style: const TextStyle(
-                      fontSize: 30,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                );
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 5.0),
+            child: TableCalendar<CalendarEvent>(
+              firstDay: DateTime.utc(2020, 1, 1),
+              lastDay: DateTime.utc(2099, 12, 31),
+              focusedDay: _focusedDay,
+              selectedDayPredicate: (_) => false,
+              onDaySelected: (selectedDay, focusedDay) {
+                setState(() {
+                  _selectedDay = selectedDay;
+                  _focusedDay = focusedDay;
+                });
               },
+              calendarFormat: CalendarFormat.month,
+              startingDayOfWeek: StartingDayOfWeek.sunday,
+              rowHeight: dayRowHeight,
+              daysOfWeekHeight: headerHeight,
+              eventLoader: _getEventsForDay,
+              calendarStyle: CalendarStyle(
+                outsideDaysVisible: true,
+                isTodayHighlighted: true,
+                defaultTextStyle: TextStyle(fontSize: 12),
+                weekendTextStyle: TextStyle(color: Colors.redAccent),
+              ),
+              headerStyle: HeaderStyle(
+                formatButtonVisible: false,
+                titleCentered: true,
+                titleTextStyle: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              calendarBuilders: CalendarBuilders<CalendarEvent>(
+                defaultBuilder: (context, day, focusedDay) =>
+                    _buildDayCell(day, weekday: day.weekday),
+                selectedBuilder: (context, day, focusedDay) =>
+                    _buildDayCell(day, weekday: day.weekday),
+                todayBuilder: (context, day, focusedDay) =>
+                    _buildDayCell(day, isToday: true, weekday: day.weekday),
+                outsideBuilder: (context, day, focusedDay) =>
+                    _buildDayCell(day, isOutside: true, weekday: day.weekday),
+                markerBuilder: (context, day, events) =>
+                    const SizedBox.shrink(), // No black dots
+                dowBuilder: (context, day) {
+                  return Container(
+                    decoration: BoxDecoration(
+                      border: Border(
+                        right: day.weekday == DateTime.saturday
+                            ? BorderSide.none
+                            : BorderSide(
+                          color: Colors.grey.shade400,
+                          width: 0.5,
+                        ),
+                        bottom: BorderSide(
+                          color: Colors.grey.shade400,
+                          width: 0.5,
+                        ),
+                      ),
+                    ),
+                    alignment: Alignment.centerRight,
+                    padding: const EdgeInsets.symmetric(horizontal: 6),
+                    child: Text(
+                      DateFormat.E().format(day),
+                      style: const TextStyle(
+                        fontSize: 30,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  );
+                },
+              ),
             ),
           ),
         ),
