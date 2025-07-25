@@ -3,23 +3,6 @@ import 'package:table_calendar/table_calendar.dart';
 import 'package:intl/intl.dart';
 import '../data/dummy_events.dart';
 
-// class CalendarEvent {
-//   final String title;
-//   final DateTime date;
-//
-//   CalendarEvent({required this.title, required this.date});
-// }
-
-// final dummyEvents = {
-//   DateTime.utc(2025, 7, 21): [
-//     CalendarEvent(title: "Doctor Appointment", date: DateTime.utc(2025, 7, 21)),
-//     CalendarEvent(title: "Grocery Pickup", date: DateTime.utc(2025, 7, 21)),
-//   ],
-//   DateTime.utc(2025, 7, 23): [
-//     CalendarEvent(title: "Team Meeting", date: DateTime.utc(2025, 7, 23)),
-//   ],
-// };
-
 class CalendarWidget extends StatefulWidget {
   @override
   State<CalendarWidget> createState() => _CalendarWidgetState();
@@ -53,9 +36,9 @@ class _CalendarWidgetState extends State<CalendarWidget> {
     } else {
       final time = TimeOfDay.fromDateTime(dt);
       final hour = time.hourOfPeriod == 0 ? 12 : time.hourOfPeriod;
-      final suffix = time.period == DayPeriod.am ? 'AM' : 'PM';
+      final suffix = time.period == DayPeriod.am ? 'am' : 'pm';
       final minutes = time.minute.toString().padLeft(2, '0');
-      return '$hour:$minutes $suffix';
+      return '$hour:$minutes$suffix';
     }
   }
 
@@ -77,6 +60,8 @@ class _CalendarWidgetState extends State<CalendarWidget> {
             ? Colors.indigo.shade100
             : isToday
             ? Colors.indigo.shade50
+            : isOutside
+            ? Colors.white.withOpacity(.4) // faded background for outside days
             : Colors.white,
         border: Border(
           top: BorderSide(color: borderColor, width: 0.5),
@@ -94,7 +79,16 @@ class _CalendarWidgetState extends State<CalendarWidget> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.end,
         children: [
-          Text('${day.day}', style: TextStyle(fontSize: 12)),
+          Text(
+            '${day.day}',
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: 16,
+              color: isOutside
+                  ? Colors.black.withOpacity(0.2) // faded text for outside days
+                  : Colors.black,
+            ),
+          ),
           if (hasEvents)
             Padding(
               padding: const EdgeInsets.only(top: 4.0),
@@ -102,7 +96,16 @@ class _CalendarWidgetState extends State<CalendarWidget> {
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: events.map((e) {
                   final timeText = formatEventTime(e);
-                  return Text(timeText.isNotEmpty ? '$timeText ${e.title}' : e.title,);
+                  return Text(
+                    timeText.isNotEmpty ? '$timeText ${e.title}' : e.title,
+                    style: TextStyle(
+                      color: isOutside
+                          ? Colors.black.withOpacity(
+                              0.4,
+                            ) // faded events text too
+                          : Colors.black,
+                    ),
+                  );
                 }).toList(),
               ),
             ),
@@ -140,8 +143,8 @@ class _CalendarWidgetState extends State<CalendarWidget> {
             daysOfWeekHeight: headerHeight,
             eventLoader: _getEventsForDay,
             calendarStyle: CalendarStyle(
-              outsideDaysVisible: false,
-              isTodayHighlighted: false,
+              outsideDaysVisible: true,
+              isTodayHighlighted: true,
               defaultTextStyle: TextStyle(fontSize: 12),
               weekendTextStyle: TextStyle(color: Colors.redAccent),
             ),
@@ -183,7 +186,7 @@ class _CalendarWidgetState extends State<CalendarWidget> {
                   child: Text(
                     DateFormat.E().format(day),
                     style: const TextStyle(
-                      fontSize: 24,
+                      fontSize: 30,
                       fontWeight: FontWeight.w600,
                     ),
                   ),
