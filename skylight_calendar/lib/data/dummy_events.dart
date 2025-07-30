@@ -4,11 +4,13 @@ class CalendarEvent {
   final String title;
   final DateTime startDate;
   final DateTime? endDate;
+  final int userId;
 
   CalendarEvent({
     required this.title,
     required this.startDate,
     this.endDate,
+    required this.userId,
   });
 
   /// Returns the effective endDate (same as startDate if not set)
@@ -27,35 +29,42 @@ final List<CalendarEvent> dummyEvents = [
   CalendarEvent(
     title: "Vacation",
     startDate: DateTime.utc(2025, 7, 21, 9, 30),
+    userId: 1,
   ),
   CalendarEvent(
     title: "Doctor Appointment",
     startDate: DateTime.utc(2025, 7, 22),
     endDate: DateTime.utc(2025, 7, 22),
+    userId: 1,
   ),
   CalendarEvent(
     title: "Doctor Appointment2",
     startDate: DateTime.utc(2025, 7, 22),
     endDate: DateTime.utc(2025, 7, 22),
+    userId: 1,
   ),
   CalendarEvent(
     title: "Doctor Appointment3",
     startDate: DateTime.utc(2025, 7, 22),
     endDate: DateTime.utc(2025, 7, 22),
+    userId: 1,
   ),
   CalendarEvent(
     title: "Doctor Appointment4",
     startDate: DateTime.utc(2025, 7, 22),
     endDate: DateTime.utc(2025, 7, 22),
+    userId: 1,
   ),
   CalendarEvent(
     title: "Doctor Appointment5",
     startDate: DateTime.utc(2025, 7, 22),
     endDate: DateTime.utc(2025, 7, 22),
+    userId: 1,
   ),
   CalendarEvent(
     title: "Conference",
     startDate: DateTime.utc(2025, 7, 25),
     endDate: DateTime.utc(2025, 7, 27),
+    userId: 1,
   ),
 ];

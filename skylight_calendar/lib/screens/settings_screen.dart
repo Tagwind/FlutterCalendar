@@ -14,16 +14,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
   String calendarDisplayName = "Highlight Calendar";
   String zipCode = "Enter a ZIP code to get weather data";
   String startWeekOn = "Sunday";
-  String textSize = "Sunday";
-  String displayDensity = "Sunday";
-  String autoBrightness = "Sunday";
-  String brightness = "Sunday";
-  String volumeLevel = "Sunday";
+  String textSize = "Small";
+  String displayDensity = "Compact";
+  bool autoBrightness = true;
+  String brightness = "100%";
+  String volumeLevel = "100%";
   bool keyBoardClicks = true;
-  String deviceName = "Sunday";
-  String connectedServer = "Sunday";
-  String softWareVer = "Sunday";
-  String macAddress = "Sunday";
+  String deviceName = "Test Name";
+  String connectedServer = "Test Server";
+  String softWareVer = "Version 0.1.0";
+  String macAddress = "Test Mac Address";
   Color profileColor = Colors.indigo;
   bool isDarkMode = false;
   bool use24Hour = false;
@@ -140,7 +140,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _sectionTitle('Wi-Fi'),
+            _sectionTitle('Wi-Fi Name'),
             TextField(
               decoration: const InputDecoration(border: OutlineInputBorder()),
               controller: TextEditingController(text: wiFiName),
@@ -162,6 +162,62 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   ),
                 ),
               ],
+            ),
+            const SizedBox(height: 16),
+            _sectionTitle('Time Zone'),
+            TextField(
+              decoration: const InputDecoration(border: OutlineInputBorder()),
+              controller: TextEditingController(text: timeZone),
+              onChanged: (val) => setState(() => timeZone = val),
+            ),
+            const SizedBox(height: 16),
+            _sectionTitle('Calendar Display Name'),
+            TextField(
+              decoration: const InputDecoration(border: OutlineInputBorder()),
+              controller: TextEditingController(text: calendarDisplayName),
+              onChanged: (val) => setState(() => calendarDisplayName = val),
+            ),
+            const SizedBox(height: 16),
+            _sectionTitle('Weather Zip Code'),
+            TextField(
+              decoration: const InputDecoration(border: OutlineInputBorder()),
+              controller: TextEditingController(text: zipCode),
+              onChanged: (val) => setState(() => zipCode = val),
+            ),
+            const SizedBox(height: 16),
+            _sectionTitle('Start Week On'),
+            TextField(
+              decoration: const InputDecoration(border: OutlineInputBorder()),
+              controller: TextEditingController(text: startWeekOn),
+              onChanged: (val) => setState(() => startWeekOn = val),
+            ),
+            const SizedBox(height: 16),
+            _sectionTitle('Text Size'),
+            TextField(
+              decoration: const InputDecoration(border: OutlineInputBorder()),
+              controller: TextEditingController(text: textSize),
+              onChanged: (val) => setState(() => textSize = val),
+            ),
+            const SizedBox(height: 16),
+            _sectionTitle('Display Density'),
+            TextField(
+              decoration: const InputDecoration(border: OutlineInputBorder()),
+              controller: TextEditingController(text: displayDensity),
+              onChanged: (val) => setState(() => displayDensity = val),
+            ),
+            const SizedBox(height: 16),
+            _sectionTitle('Display Brightness'),
+            SwitchListTile(
+              value: autoBrightness,
+              onChanged: (val) => setState(() => autoBrightness = val),
+              title: const Text('Auto Brightness'),
+            ),
+            const SizedBox(height: 16),
+            _sectionTitle('Calendar Display Name'),
+            TextField(
+              decoration: const InputDecoration(border: OutlineInputBorder()),
+              controller: TextEditingController(text: calendarDisplayName),
+              onChanged: (val) => setState(() => calendarDisplayName = val),
             ),
           ],
         );

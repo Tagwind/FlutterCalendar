@@ -34,7 +34,7 @@ class _CalendarWidgetState extends State<CalendarWidget> {
   String formatEventTime(CalendarEvent event) {
     final dt = event.startDate;
     if (dt.hour == 0 && dt.minute == 0) {
-      return ''; // No time set, omit it
+      return 'All Day'; // No time set, omit it
     } else {
       final time = TimeOfDay.fromDateTime(dt);
       final hour = time.hourOfPeriod == 0 ? 12 : time.hourOfPeriod;
@@ -75,7 +75,7 @@ class _CalendarWidgetState extends State<CalendarWidget> {
         builder: (context, constraints) {
           const double dayNumberHeight = 30.0;
           const double spacing = 4.0;
-          const double eventLineHeight = 18.0;
+          const double eventLineHeight = 26.0;
 
           final availableHeight = constraints.maxHeight - dayNumberHeight - spacing;
           final maxEventLines = (availableHeight / eventLineHeight).floor();
@@ -118,22 +118,29 @@ class _CalendarWidgetState extends State<CalendarWidget> {
                       for (int i = 0; i < visibleCount; i++)
                         SizedBox(
                           height: eventLineHeight,
-                          child: Text(
-                            _formatEventText(events[i]),
-                            style: TextStyle(
-                              fontSize: 12,
-                              color: isOutside
-                                  ? Colors.black.withOpacity(0.2)
-                                  : Colors.black,
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 6.0, vertical: 2.0),
+                            margin: const EdgeInsets.only(bottom: 2.0),
+                            decoration: BoxDecoration(
+                              color: _getEventColor(events[i]), // pastel background
+                              borderRadius: BorderRadius.circular(10.0),
                             ),
-                            overflow: TextOverflow.ellipsis,
+                            child: Text(
+                              _formatEventText(events[i]),
+                              style: TextStyle(
+                                height: 1.3,
+                                fontSize: 13,
+                                color: Colors.black87,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
                           ),
                         ),
                       if (hiddenCount > 0)
                         SizedBox(
                           height: eventLineHeight,
                           child: Text(
-                            '+$hiddenCount more',
+                            '$hiddenCount More...',
                             style: TextStyle(
                               fontSize: 12,
                               color: Colors.grey,
@@ -155,6 +162,17 @@ class _CalendarWidgetState extends State<CalendarWidget> {
     return timeText.isNotEmpty ? '$timeText ${e.title}' : e.title;
   }
 
+  Color _getEventColor(CalendarEvent event) {
+    const pastelColors = [
+      Color(0xFFCCE5FF), // Light Blue
+      Color(0xFFD5F5E3), // Light Green
+      Color(0xFFFFF3CD), // Light Yellow
+      Color(0xFFFFD6D6), // Light Pink
+      Color(0xFFE0D7FF), // Light Purple
+    ];
+
+    return pastelColors[event.userId % pastelColors.length];
+  }
 
   @override
   Widget build(BuildContext context) {
