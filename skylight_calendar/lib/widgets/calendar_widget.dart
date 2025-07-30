@@ -45,15 +45,15 @@ class _CalendarWidgetState extends State<CalendarWidget> {
   }
 
   Widget _buildDayCell(
-    DateTime day, {
-    bool isToday = false,
-    bool isOutside = false,
-    int weekday = 1,
-  }) {
+      DateTime day, {
+        bool isToday = false,
+        bool isOutside = false,
+        int weekday = 1,
+      }) {
     final events = _getEventsForDay(day);
     final hasEvents = events.isNotEmpty;
     final borderColor = Colors.grey.shade400;
-    final burntOrange = Color(0xFFCC5500); // burnt orange hex color
+    final burntOrange = Color(0xFFCC5500);
 
     return Container(
       decoration: BoxDecoration(
@@ -71,54 +71,90 @@ class _CalendarWidgetState extends State<CalendarWidget> {
       ),
       padding: const EdgeInsets.only(right: 4.0, top: 4.0),
       alignment: Alignment.topRight,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.end,
-        children: [
-          Container(
-            width: 30,
-            height: 30,
-            alignment: Alignment.center,
-            decoration: isToday
-                ? BoxDecoration(
-                    color: burntOrange, // burnt orange
-                    shape: BoxShape.circle,
-                  )
-                : null,
-            child: Text(
-              '${day.day}',
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 16,
-                color: isToday
-                    ? Colors.white
-                    : isOutside
-                    ? Colors.black.withOpacity(0.4)
-                    : Colors.black,
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          const double dayNumberHeight = 30.0;
+          const double spacing = 4.0;
+          const double eventLineHeight = 18.0;
+
+          final availableHeight = constraints.maxHeight - dayNumberHeight - spacing;
+          final maxEventLines = (availableHeight / eventLineHeight).floor();
+
+          final visibleCount = maxEventLines < events.length ? maxEventLines - 1 : events.length;
+          final hiddenCount = events.length - visibleCount;
+
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              Container(
+                width: 30,
+                height: dayNumberHeight,
+                alignment: Alignment.center,
+                decoration: isToday
+                    ? BoxDecoration(
+                  color: burntOrange,
+                  shape: BoxShape.circle,
+                )
+                    : null,
+                child: Text(
+                  '${day.day}',
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                    color: isToday
+                        ? Colors.white
+                        : isOutside
+                        ? Colors.black.withOpacity(0.4)
+                        : Colors.black,
+                  ),
+                ),
               ),
-            ),
-          ),
-          if (hasEvents)
-            Padding(
-              padding: const EdgeInsets.only(top: 4.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: events.map((e) {
-                  final timeText = formatEventTime(e);
-                  return Text(
-                    timeText.isNotEmpty ? '$timeText ${e.title}' : e.title,
-                    style: TextStyle(
-                      color: isOutside
-                          ? Colors.black.withOpacity(0.2)
-                          : Colors.black,
-                    ),
-                  );
-                }).toList(),
-              ),
-            ),
-        ],
+              if (hasEvents)
+                Padding(
+                  padding: const EdgeInsets.only(top: spacing),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      for (int i = 0; i < visibleCount; i++)
+                        SizedBox(
+                          height: eventLineHeight,
+                          child: Text(
+                            _formatEventText(events[i]),
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: isOutside
+                                  ? Colors.black.withOpacity(0.2)
+                                  : Colors.black,
+                            ),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      if (hiddenCount > 0)
+                        SizedBox(
+                          height: eventLineHeight,
+                          child: Text(
+                            '+$hiddenCount more',
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: Colors.grey,
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
+            ],
+          );
+        },
       ),
     );
   }
+
+  String _formatEventText(CalendarEvent e) {
+    final timeText = formatEventTime(e);
+    return timeText.isNotEmpty ? '$timeText ${e.title}' : e.title;
+  }
+
 
   @override
   Widget build(BuildContext context) {
