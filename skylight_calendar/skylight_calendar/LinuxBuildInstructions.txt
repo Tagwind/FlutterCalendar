@@ -1,0 +1,14 @@
+Follow the below steps to move files to the pi and then build app on the pi. Run it by double clicking on the app
+
+
+scp -r "D:\GitHub Projects\FlutterCalendar\skylight_calendar" pi@highlight:~/skylight_calendar
+
+password raspberry
+
+cd ~/skylight_calendar
+flutter pub get
+flutter build linux --release
+
+
+on the pi go to skylight_calendar/build/linux/arm64/release/bundle/
+double click skylight_calendar

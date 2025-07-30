@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:table_calendar/table_calendar.dart';
 import 'package:intl/intl.dart';
 import '../data/dummy_events.dart';
+import 'app_header_widget.dart';
 
 class CalendarWidget extends StatefulWidget {
   @override
@@ -11,6 +12,7 @@ class CalendarWidget extends StatefulWidget {
 class _CalendarWidgetState extends State<CalendarWidget> {
   DateTime _focusedDay = DateTime.utc(2025, 7, 21);
   DateTime? _selectedDay;
+  String _viewType = "month";
 
   List<CalendarEvent> _getEventsForDay(DateTime day) {
     final normalizedDay = DateTime.utc(day.year, day.month, day.day);
@@ -126,7 +128,29 @@ class _CalendarWidgetState extends State<CalendarWidget> {
 
     return Scaffold(
       backgroundColor: Colors.white,
-      appBar: AppBar(title: Text('Skylight Calendar')),
+      appBar: PreferredSize(
+        preferredSize: Size.fromHeight(115),
+        child: AppHeader(
+          title: "Skylight Calendar",
+          monthLabel: DateFormat.yMMMM().format(_focusedDay),
+          currentViewType: _viewType,
+          onViewTypeChanged: (view) {
+            setState(() {
+              _viewType = view;
+            });
+          },
+          onPrevMonth: () {
+            setState(() {
+              _focusedDay = DateTime(_focusedDay.year, _focusedDay.month - 1);
+            });
+          },
+          onNextMonth: () {
+            setState(() {
+              _focusedDay = DateTime(_focusedDay.year, _focusedDay.month + 1);
+            });
+          },
+        ),
+      ),
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.only(bottom: 16.0),
@@ -154,14 +178,7 @@ class _CalendarWidgetState extends State<CalendarWidget> {
                 defaultTextStyle: TextStyle(fontSize: 12),
                 weekendTextStyle: TextStyle(color: Colors.redAccent),
               ),
-              headerStyle: HeaderStyle(
-                formatButtonVisible: false,
-                titleCentered: true,
-                titleTextStyle: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
+              headerVisible: false,
               calendarBuilders: CalendarBuilders<CalendarEvent>(
                 defaultBuilder: (context, day, focusedDay) =>
                     _buildDayCell(day, weekday: day.weekday),
@@ -180,9 +197,9 @@ class _CalendarWidgetState extends State<CalendarWidget> {
                         right: day.weekday == DateTime.saturday
                             ? BorderSide.none
                             : BorderSide(
-                          color: Colors.grey.shade400,
-                          width: 0.5,
-                        ),
+                                color: Colors.grey.shade400,
+                                width: 0.5,
+                              ),
                         bottom: BorderSide(
                           color: Colors.grey.shade400,
                           width: 0.5,
