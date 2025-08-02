@@ -13,12 +13,30 @@ class AddProfileForm extends StatefulWidget {
 class _AddProfileFormState extends State<AddProfileForm> {
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
+  final _emailController = TextEditingController();
+
+  final List<Color> availableColors = [
+    Colors.red,
+    Colors.green,
+    Colors.blue,
+    Colors.orange,
+    Colors.purple,
+    Colors.indigo,
+    Colors.teal,
+    Colors.yellow,
+  ];
+
+  Color? _selectedColor;
 
   void _submit() async {
     if (_formKey.currentState!.validate()) {
-      final db = context.read<DatabaseProvider>().db;
-      await db.usersDao.insertUser(UsersCompanion(
+      final colorString = _selectedColor != null
+          ? '#${_selectedColor!.value.toRadixString(16).padLeft(8, '0')}'
+          : null;
+      await context.read<DatabaseProvider>().db.usersDao.insertUser(UsersCompanion(
         name: drift.Value(_nameController.text),
+        email: drift.Value(_nameController.text),
+        profileColor: drift.Value(colorString),
       ));
       Navigator.pop(context); // Close dialog
       setState(() {}); // Refresh settings screen
@@ -44,6 +62,18 @@ class _AddProfileFormState extends State<AddProfileForm> {
               validator: (value) => value == null || value.isEmpty ? 'Enter a name' : null,
             ),
             SizedBox(height: 20),
+            TextFormField(
+              controller: _emailController,
+              decoration: InputDecoration(labelText: 'Email Address'),
+              validator: (value) => value == null || value.isEmpty ? 'Enter an email' : null,
+            ),
+            SizedBox(height: 20),
+            Text('Select Profile Color'),
+            SizedBox(height: 8),
+            _buildColorPicker(),
+
+            SizedBox(height: 20),
+
             Row(
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
@@ -56,4 +86,27 @@ class _AddProfileFormState extends State<AddProfileForm> {
       ),
     );
   }
+
+
+  Widget _buildColorPicker() {
+    return Wrap(
+      spacing: 10,
+      children: availableColors.map((color) {
+        final isSelected = color == _selectedColor;
+        return GestureDetector(
+          onTap: () => setState(() => _selectedColor = color),
+          child: CircleAvatar(
+            radius: isSelected ? 24 : 20,
+            backgroundColor: color,
+            child: isSelected
+                ? Icon(Icons.check, color: Colors.white)
+                : null,
+          ),
+        );
+      }).toList(),
+    );
+  }
+
 }
+
+

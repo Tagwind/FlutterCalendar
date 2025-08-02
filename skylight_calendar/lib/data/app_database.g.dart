@@ -54,8 +54,38 @@ class $UsersTable extends Users with TableInfo<$UsersTable, User> {
     type: DriftSqlType.string,
     requiredDuringInsert: false,
   );
+  static const VerificationMeta _profileColorMeta = const VerificationMeta(
+    'profileColor',
+  );
   @override
-  List<GeneratedColumn> get $columns => [id, name, email, avatarUrl];
+  late final GeneratedColumn<String> profileColor = GeneratedColumn<String>(
+    'profile_color',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+    'created_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+    defaultValue: currentDateAndTime,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    name,
+    email,
+    avatarUrl,
+    profileColor,
+    createdAt,
+  ];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
@@ -91,6 +121,21 @@ class $UsersTable extends Users with TableInfo<$UsersTable, User> {
         avatarUrl.isAcceptableOrUnknown(data['avatar_url']!, _avatarUrlMeta),
       );
     }
+    if (data.containsKey('profile_color')) {
+      context.handle(
+        _profileColorMeta,
+        profileColor.isAcceptableOrUnknown(
+          data['profile_color']!,
+          _profileColorMeta,
+        ),
+      );
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    }
     return context;
   }
 
@@ -116,6 +161,14 @@ class $UsersTable extends Users with TableInfo<$UsersTable, User> {
         DriftSqlType.string,
         data['${effectivePrefix}avatar_url'],
       ),
+      profileColor: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}profile_color'],
+      ),
+      createdAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}created_at'],
+      )!,
     );
   }
 
@@ -130,11 +183,15 @@ class User extends DataClass implements Insertable<User> {
   final String name;
   final String? email;
   final String? avatarUrl;
+  final String? profileColor;
+  final DateTime createdAt;
   const User({
     required this.id,
     required this.name,
     this.email,
     this.avatarUrl,
+    this.profileColor,
+    required this.createdAt,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -147,6 +204,10 @@ class User extends DataClass implements Insertable<User> {
     if (!nullToAbsent || avatarUrl != null) {
       map['avatar_url'] = Variable<String>(avatarUrl);
     }
+    if (!nullToAbsent || profileColor != null) {
+      map['profile_color'] = Variable<String>(profileColor);
+    }
+    map['created_at'] = Variable<DateTime>(createdAt);
     return map;
   }
 
@@ -160,6 +221,10 @@ class User extends DataClass implements Insertable<User> {
       avatarUrl: avatarUrl == null && nullToAbsent
           ? const Value.absent()
           : Value(avatarUrl),
+      profileColor: profileColor == null && nullToAbsent
+          ? const Value.absent()
+          : Value(profileColor),
+      createdAt: Value(createdAt),
     );
   }
 
@@ -173,6 +238,8 @@ class User extends DataClass implements Insertable<User> {
       name: serializer.fromJson<String>(json['name']),
       email: serializer.fromJson<String?>(json['email']),
       avatarUrl: serializer.fromJson<String?>(json['avatarUrl']),
+      profileColor: serializer.fromJson<String?>(json['profileColor']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
     );
   }
   @override
@@ -183,6 +250,8 @@ class User extends DataClass implements Insertable<User> {
       'name': serializer.toJson<String>(name),
       'email': serializer.toJson<String?>(email),
       'avatarUrl': serializer.toJson<String?>(avatarUrl),
+      'profileColor': serializer.toJson<String?>(profileColor),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
     };
   }
 
@@ -191,11 +260,15 @@ class User extends DataClass implements Insertable<User> {
     String? name,
     Value<String?> email = const Value.absent(),
     Value<String?> avatarUrl = const Value.absent(),
+    Value<String?> profileColor = const Value.absent(),
+    DateTime? createdAt,
   }) => User(
     id: id ?? this.id,
     name: name ?? this.name,
     email: email.present ? email.value : this.email,
     avatarUrl: avatarUrl.present ? avatarUrl.value : this.avatarUrl,
+    profileColor: profileColor.present ? profileColor.value : this.profileColor,
+    createdAt: createdAt ?? this.createdAt,
   );
   User copyWithCompanion(UsersCompanion data) {
     return User(
@@ -203,6 +276,10 @@ class User extends DataClass implements Insertable<User> {
       name: data.name.present ? data.name.value : this.name,
       email: data.email.present ? data.email.value : this.email,
       avatarUrl: data.avatarUrl.present ? data.avatarUrl.value : this.avatarUrl,
+      profileColor: data.profileColor.present
+          ? data.profileColor.value
+          : this.profileColor,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
     );
   }
 
@@ -212,13 +289,16 @@ class User extends DataClass implements Insertable<User> {
           ..write('id: $id, ')
           ..write('name: $name, ')
           ..write('email: $email, ')
-          ..write('avatarUrl: $avatarUrl')
+          ..write('avatarUrl: $avatarUrl, ')
+          ..write('profileColor: $profileColor, ')
+          ..write('createdAt: $createdAt')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode => Object.hash(id, name, email, avatarUrl);
+  int get hashCode =>
+      Object.hash(id, name, email, avatarUrl, profileColor, createdAt);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -226,7 +306,9 @@ class User extends DataClass implements Insertable<User> {
           other.id == this.id &&
           other.name == this.name &&
           other.email == this.email &&
-          other.avatarUrl == this.avatarUrl);
+          other.avatarUrl == this.avatarUrl &&
+          other.profileColor == this.profileColor &&
+          other.createdAt == this.createdAt);
 }
 
 class UsersCompanion extends UpdateCompanion<User> {
@@ -234,29 +316,39 @@ class UsersCompanion extends UpdateCompanion<User> {
   final Value<String> name;
   final Value<String?> email;
   final Value<String?> avatarUrl;
+  final Value<String?> profileColor;
+  final Value<DateTime> createdAt;
   const UsersCompanion({
     this.id = const Value.absent(),
     this.name = const Value.absent(),
     this.email = const Value.absent(),
     this.avatarUrl = const Value.absent(),
+    this.profileColor = const Value.absent(),
+    this.createdAt = const Value.absent(),
   });
   UsersCompanion.insert({
     this.id = const Value.absent(),
     required String name,
     this.email = const Value.absent(),
     this.avatarUrl = const Value.absent(),
+    this.profileColor = const Value.absent(),
+    this.createdAt = const Value.absent(),
   }) : name = Value(name);
   static Insertable<User> custom({
     Expression<int>? id,
     Expression<String>? name,
     Expression<String>? email,
     Expression<String>? avatarUrl,
+    Expression<String>? profileColor,
+    Expression<DateTime>? createdAt,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
       if (name != null) 'name': name,
       if (email != null) 'email': email,
       if (avatarUrl != null) 'avatar_url': avatarUrl,
+      if (profileColor != null) 'profile_color': profileColor,
+      if (createdAt != null) 'created_at': createdAt,
     });
   }
 
@@ -265,12 +357,16 @@ class UsersCompanion extends UpdateCompanion<User> {
     Value<String>? name,
     Value<String?>? email,
     Value<String?>? avatarUrl,
+    Value<String?>? profileColor,
+    Value<DateTime>? createdAt,
   }) {
     return UsersCompanion(
       id: id ?? this.id,
       name: name ?? this.name,
       email: email ?? this.email,
       avatarUrl: avatarUrl ?? this.avatarUrl,
+      profileColor: profileColor ?? this.profileColor,
+      createdAt: createdAt ?? this.createdAt,
     );
   }
 
@@ -289,6 +385,12 @@ class UsersCompanion extends UpdateCompanion<User> {
     if (avatarUrl.present) {
       map['avatar_url'] = Variable<String>(avatarUrl.value);
     }
+    if (profileColor.present) {
+      map['profile_color'] = Variable<String>(profileColor.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
     return map;
   }
 
@@ -298,7 +400,9 @@ class UsersCompanion extends UpdateCompanion<User> {
           ..write('id: $id, ')
           ..write('name: $name, ')
           ..write('email: $email, ')
-          ..write('avatarUrl: $avatarUrl')
+          ..write('avatarUrl: $avatarUrl, ')
+          ..write('profileColor: $profileColor, ')
+          ..write('createdAt: $createdAt')
           ..write(')'))
         .toString();
   }
@@ -2314,6 +2418,8 @@ typedef $$UsersTableCreateCompanionBuilder =
       required String name,
       Value<String?> email,
       Value<String?> avatarUrl,
+      Value<String?> profileColor,
+      Value<DateTime> createdAt,
     });
 typedef $$UsersTableUpdateCompanionBuilder =
     UsersCompanion Function({
@@ -2321,6 +2427,8 @@ typedef $$UsersTableUpdateCompanionBuilder =
       Value<String> name,
       Value<String?> email,
       Value<String?> avatarUrl,
+      Value<String?> profileColor,
+      Value<DateTime> createdAt,
     });
 
 final class $$UsersTableReferences
@@ -2448,6 +2556,16 @@ class $$UsersTableFilterComposer extends Composer<_$AppDatabase, $UsersTable> {
 
   ColumnFilters<String> get avatarUrl => $composableBuilder(
     column: $table.avatarUrl,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get profileColor => $composableBuilder(
+    column: $table.profileColor,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -2605,6 +2723,16 @@ class $$UsersTableOrderingComposer
     column: $table.avatarUrl,
     builder: (column) => ColumnOrderings(column),
   );
+
+  ColumnOrderings<String> get profileColor => $composableBuilder(
+    column: $table.profileColor,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnOrderings(column),
+  );
 }
 
 class $$UsersTableAnnotationComposer
@@ -2627,6 +2755,14 @@ class $$UsersTableAnnotationComposer
 
   GeneratedColumn<String> get avatarUrl =>
       $composableBuilder(column: $table.avatarUrl, builder: (column) => column);
+
+  GeneratedColumn<String> get profileColor => $composableBuilder(
+    column: $table.profileColor,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
 
   Expression<T> tasksRefs<T extends Object>(
     Expression<T> Function($$TasksTableAnnotationComposer a) f,
@@ -2792,11 +2928,15 @@ class $$UsersTableTableManager
                 Value<String> name = const Value.absent(),
                 Value<String?> email = const Value.absent(),
                 Value<String?> avatarUrl = const Value.absent(),
+                Value<String?> profileColor = const Value.absent(),
+                Value<DateTime> createdAt = const Value.absent(),
               }) => UsersCompanion(
                 id: id,
                 name: name,
                 email: email,
                 avatarUrl: avatarUrl,
+                profileColor: profileColor,
+                createdAt: createdAt,
               ),
           createCompanionCallback:
               ({
@@ -2804,11 +2944,15 @@ class $$UsersTableTableManager
                 required String name,
                 Value<String?> email = const Value.absent(),
                 Value<String?> avatarUrl = const Value.absent(),
+                Value<String?> profileColor = const Value.absent(),
+                Value<DateTime> createdAt = const Value.absent(),
               }) => UsersCompanion.insert(
                 id: id,
                 name: name,
                 email: email,
                 avatarUrl: avatarUrl,
+                profileColor: profileColor,
+                createdAt: createdAt,
               ),
           withReferenceMapper: (p0) => p0
               .map(
