@@ -1,4 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../forms/add_profile_form.dart';
+
+// Import your database provider class
+import '../data/app_database.dart';
+import '../providers/database_provider.dart';
+import '../data/tables/users.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -50,6 +57,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   String selectedSection = 'General';
 
+
+  User? selectedUser;
+
+
   void toggleSignIn() {
     setState(() {
       isSignedIn = !isSignedIn;
@@ -60,6 +71,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
     setState(() {
       selectedSection = section;
     });
+  }
+
+  void _showAddProfileOverlay(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (_) => Dialog(
+        insetPadding: EdgeInsets.all(20),
+        child: AddProfileForm(),
+      ),
+    );
   }
 
   @override
@@ -223,21 +244,54 @@ class _SettingsScreenState extends State<SettingsScreen> {
         );
 
       case 'Calendar':
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _sectionTitle('Google Calendar Integration'),
-            ListTile(
-              contentPadding: EdgeInsets.zero,
-              title: Text(
-                isSignedIn ? 'Signed in with Google' : 'Not signed in',
-              ),
-              trailing: ElevatedButton(
-                onPressed: toggleSignIn,
-                child: Text(isSignedIn ? 'Sign out' : 'Sign in'),
-              ),
-            ),
-          ],
+        return FutureBuilder<List<User>>(
+          future: context.read<DatabaseProvider>().db.usersDao.getAllUsers(),
+          builder: (context, snapshot) {
+            final profiles = snapshot.data ?? [];
+
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _sectionTitle('Google Calendar Integration'),
+                ListTile(
+                  contentPadding: EdgeInsets.zero,
+                  title: Text(
+                    isSignedIn ? 'Signed in with Google' : 'Not signed in',
+                  ),
+                  trailing: ElevatedButton(
+                    onPressed: toggleSignIn,
+                    child: Text(isSignedIn ? 'Sign out' : 'Sign in'),
+                  ),
+                ),
+                SizedBox(height: 16),
+                _sectionTitle('Calendar Profiles'),
+                DropdownButton<User?>(
+                  isExpanded: true,
+                  value: selectedUser,
+                  hint: Text("Select Profile"),
+                  items: [
+                    DropdownMenuItem<User?>(
+                      value: null,
+                      child: Text("➕ Add Profile"),
+                    ),
+                    ...profiles.map((user) => DropdownMenuItem<User?>(
+                      value: user,
+                      child: Text(user.name),
+                    )),
+                  ],
+                  onChanged: (value) {
+                    if (value == null) {
+                      _showAddProfileOverlay(context);
+                    } else {
+                      setState(() {
+                        selectedUser = value;
+                      });
+                    }
+                  },
+                ),
+              ],
+            );
+          },
         );
 
       case 'Chores':

@@ -1,30 +1,5 @@
 import '../models/event.dart';
 
-class CalendarEvent {
-  final String title;
-  final DateTime startDate;
-  final DateTime? endDate;
-  final int userId;
-
-  CalendarEvent({
-    required this.title,
-    required this.startDate,
-    this.endDate,
-    required this.userId,
-  });
-
-  /// Returns the effective endDate (same as startDate if not set)
-  DateTime get effectiveEndDate => endDate ?? startDate;
-}
-
-
-// Map<DateTime, List<CalendarEvent>> normalizeEvents(Map<DateTime, List<CalendarEvent>> input) {
-//   return {
-//     for (final entry in input.entries)
-//       DateTime.utc(entry.key.year, entry.key.month, entry.key.day): entry.value
-//   };
-// }
-
 final List<CalendarEvent> dummyEvents = [
   CalendarEvent(
     title: "Vacation",
