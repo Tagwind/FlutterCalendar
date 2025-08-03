@@ -5,18 +5,20 @@ import 'tables/record_locks.dart';
 import 'tables/rewards.dart';
 import 'tables/users.dart';
 import 'tables/tasks.dart';
+import 'tables/settings.dart';
 
 import 'dart:io';
 import 'package:drift/native.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as p;
 import 'users_dao.dart';
+import 'settings_dao.dart';
 
 part 'app_database.g.dart'; // Important!
 
 @DriftDatabase(
-  tables: [Users, Tasks, Rewards, Events, GoogleCalendars, RecordLocks],
-    daos: [UsersDao],
+  tables: [Users, Tasks, Rewards, Events, GoogleCalendars, RecordLocks, Settings],
+    daos: [UsersDao, SettingsDao],
 )
 class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());

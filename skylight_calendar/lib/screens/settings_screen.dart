@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:skylight_calendar/constants/default_settings.dart';
 import '../forms/add_profile_form.dart';
 
 // Import your database provider class
 import '../data/app_database.dart';
 import '../providers/database_provider.dart';
 import '../data/tables/users.dart';
+import '../providers/settings_provider.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -18,6 +20,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
   //General
   String wiFiName = "Enter Wi-Fi";
   String timeZone = "Central";
+  late TextEditingController timeZoneController;
+  late TextEditingController displayNameController;
+  late TextEditingController zipCodeController;
   String calendarDisplayName = "Highlight Calendar";
   String zipCode = "Enter a ZIP code to get weather data";
   String startWeekOn = "Sunday";
@@ -61,6 +66,26 @@ class _SettingsScreenState extends State<SettingsScreen> {
   User? selectedUser;
 
 
+  @override
+  void initState() {
+    super.initState();
+    final settings = context.read<SettingsProvider>();
+    print(settings.get(SettingKey.timezone));
+    timeZone = settings.get(SettingKey.timezone) ?? 'Central';
+    timeZoneController = TextEditingController(text: timeZone);
+
+    calendarDisplayName = settings.get(SettingKey.calendarDisplayName) ?? '';
+    zipCode = settings.get(SettingKey.zipCode) ?? '';
+  }
+
+  @override
+  void dispose() {
+    timeZoneController.dispose();
+    displayNameController.dispose();
+    zipCodeController.dispose();
+    super.dispose();
+  }
+
   void toggleSignIn() {
     setState(() {
       isSignedIn = !isSignedIn;
@@ -80,6 +105,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
         insetPadding: EdgeInsets.all(20),
         child: AddProfileForm(),
       ),
+    );
+  }
+
+  void _saveSetting(String key, String value, String section, String type) async {
+    final db = context.read<DatabaseProvider>().db;
+    await db.settingsDao.upsertSetting(
+      key: key,
+      value: value,
+      section: section,
+      type: type,
     );
   }
 
@@ -188,8 +223,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
             _sectionTitle('Time Zone'),
             TextField(
               decoration: const InputDecoration(border: OutlineInputBorder()),
-              controller: TextEditingController(text: timeZone),
-              onChanged: (val) => setState(() => timeZone = val),
+              controller: timeZoneController,
+              onChanged: (val) {
+                setState(() => timeZone = val);
+                _saveSetting('timezone', val, 'general', 'text');
+              },
             ),
             const SizedBox(height: 16),
             _sectionTitle('Calendar Display Name'),

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:skylight_calendar/providers/settings_provider.dart';
 import 'data/app_database.dart';
 import 'screens/calendar_screen.dart';
 import 'providers/database_provider.dart';
@@ -16,6 +17,14 @@ class SkylightApp extends StatelessWidget {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => DatabaseProvider()),
+        ChangeNotifierProxyProvider<DatabaseProvider, SettingsProvider>(
+          create: (_) => SettingsProvider(null), // just a placeholder
+          update: (_, dbProvider, previous) {
+            final settingsProvider = SettingsProvider(dbProvider.db);
+            settingsProvider.loadSettings();
+            return settingsProvider;
+          },
+        ),
       ],
       child: MaterialApp(
         title: 'Smith Family',
