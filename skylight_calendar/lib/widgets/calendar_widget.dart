@@ -186,7 +186,7 @@ class _CalendarWidgetState extends State<CalendarWidget> {
       appBar: PreferredSize(
         preferredSize: Size.fromHeight(115),
         child: AppHeader(
-          title: "Skylight Calendar",
+          title: "Highlight Calendar",
           monthLabel: DateFormat.yMMMM().format(_focusedDay),
           currentViewType: _viewType,
           onViewTypeChanged: (view) {
