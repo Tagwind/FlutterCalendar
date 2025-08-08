@@ -207,6 +207,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   // Right panel content
   Widget _buildSettingsContent() {
+    final myTextStyle = const TextStyle(fontSize: 16, color: Colors.black);
+
     switch (selectedSection) {
       case 'General':
         return Column(
