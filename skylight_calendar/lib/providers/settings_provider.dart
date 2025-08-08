@@ -6,23 +6,25 @@ import 'package:flutter_native_timezone/flutter_native_timezone.dart';
 
 
 class SettingsProvider extends ChangeNotifier {
-  AppDatabase? _db;
+  final AppDatabase? _db;
   final Map<SettingKey, String> _settings = {
     for (var entry in settingDefinitions.entries)
       entry.key: entry.value.defaultValue,
   };
 
-  late final Future<void> initialized;
   bool _initialized = false;
+  late final Future<void> initialized;
+
   SettingsProvider(this._db) {
-    initialized = loadSettings();
+    // Initialize Future but do NOT start loading yet
+    initialized = _loadSettingsOnce();
   }
 
-  void setDb(AppDatabase? db) {
-    _db = db;
-  }
+  Future<void> _loadSettingsOnce() async {
+    if (_initialized) return;
+    _initialized = true;
 
-  Future<void> loadSettings() async {
+    // Your existing loadSettings() logic here, renamed to _loadSettingsOnce
     final allTimeZones = tz.timeZoneDatabase.locations.keys;
 
     for (var entry in settingDefinitions.entries) {
@@ -32,14 +34,11 @@ class SettingsProvider extends ChangeNotifier {
 
       if (storedValue != null && storedValue.isNotEmpty) {
         if (entry.key == SettingKey.timezone) {
-          // Validate the timezone value from DB
           if (allTimeZones.contains(storedValue)) {
             _settings[entry.key] = storedValue;
           } else {
-            // Invalid timezone, default to New York and update DB
             final fallback = 'America/New_York';
             _settings[entry.key] = fallback;
-
             await _db?.settingsDao.upsertSetting(
               key: keyString,
               value: fallback,
@@ -51,9 +50,8 @@ class SettingsProvider extends ChangeNotifier {
           _settings[entry.key] = storedValue;
         }
       } else {
+        // Default value and timezone fallback logic here as before
         String value = definition.defaultValue;
-
-        // Handle missing timezone case with platform fallback, if needed
         if (entry.key == SettingKey.timezone) {
           try {
             final localTimezone = await FlutterNativeTimezone.getLocalTimezone();
@@ -66,9 +64,7 @@ class SettingsProvider extends ChangeNotifier {
             value = 'America/New_York';
           }
         }
-
         _settings[entry.key] = value;
-
         await _db?.settingsDao.upsertSetting(
           key: keyString,
           value: value,
@@ -78,7 +74,6 @@ class SettingsProvider extends ChangeNotifier {
       }
     }
 
-    _initialized = true;
     notifyListeners();
   }
 

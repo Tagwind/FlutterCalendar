@@ -28,20 +28,22 @@ class SkylightApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => DatabaseProvider()),
 
         ChangeNotifierProxyProvider<DatabaseProvider, SettingsProvider>(
-          create: (_) => SettingsProvider(null),
-          update: (_, dbProvider, previous) {
+          create: (context) => SettingsProvider(context.read<DatabaseProvider>().db),
+          update: (context, dbProvider, previous) {
             if (previous != null) {
-              previous.setDb(dbProvider.db);
-              previous.loadSettings();
               return previous;
             }
-            return SettingsProvider(dbProvider.db)..loadSettings();
+            return SettingsProvider(dbProvider.db);
           },
         ),
 
         ChangeNotifierProxyProvider<SettingsProvider, CurrentTimeProvider>(
-          create: (_) => CurrentTimeProvider(SettingsProvider(null)), // fallback
-          update: (_, settingsProvider, __) => CurrentTimeProvider(settingsProvider),
+          create: (context) => CurrentTimeProvider(context.read<SettingsProvider>()),
+          update: (context, settingsProvider, previous) {
+            previous ??= CurrentTimeProvider(settingsProvider);
+            previous.updateSettingsProvider(settingsProvider);
+            return previous;
+          },
         ),
       ],
       child: MaterialApp(

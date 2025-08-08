@@ -1,43 +1,42 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:skylight_calendar/providers/settings_provider.dart';
-
 import 'package:timezone/timezone.dart' as tz;
 
 import '../constants/default_settings.dart';
 
 class CurrentTimeProvider with ChangeNotifier {
-  final SettingsProvider settingsProvider;
-  final List<String> allTimeZones = tz.timeZoneDatabase.locations.keys.toList();
-  late tz.TZDateTime _now;
+  SettingsProvider _settingsProvider;
   Timer? _timer;
-  bool _initialized = false;
-  bool _disposed = false;
+  late tz.TZDateTime _now;
 
-  bool get isReady => _initialized;
-
-  CurrentTimeProvider(this.settingsProvider) {
+  CurrentTimeProvider(this._settingsProvider) {
+    _now = tz.TZDateTime.now(tz.getLocation('America/New_York'));
     _init();
   }
 
   Future<void> _init() async {
-    await settingsProvider.initialized;
-
-    // Mark initialized even if disposed, so anyone awaiting knows it finished
-    _initialized = true;
-
-    if (_disposed) return;
-
+    await _settingsProvider.initialized;
     _now = _getNow();
     _startTimer();
-
     notifyListeners();
   }
 
-  tz.TZDateTime? get now => _initialized ? _now : null;
+  void updateSettingsProvider(SettingsProvider newProvider) {
+    if (identical(_settingsProvider, newProvider)) return;
+
+    _timer?.cancel();
+    _settingsProvider = newProvider;
+    _init();
+  }
+
+  tz.TZDateTime get now => _now;
 
   tz.TZDateTime _getNow() {
-    final timezone = settingsProvider.get(SettingKey.timezone);
+    var timezone = _settingsProvider.get(SettingKey.timezone);
+    if (timezone.isEmpty || !tz.timeZoneDatabase.locations.containsKey(timezone)) {
+      timezone = 'America/New_York';
+    }
     final location = tz.getLocation(timezone);
     return tz.TZDateTime.now(location);
   }
@@ -45,7 +44,6 @@ class CurrentTimeProvider with ChangeNotifier {
   void _startTimer() {
     _timer?.cancel();
     _timer = Timer.periodic(const Duration(seconds: 1), (_) {
-      if (_disposed) return;
       _now = _getNow();
       notifyListeners();
     });
@@ -53,7 +51,6 @@ class CurrentTimeProvider with ChangeNotifier {
 
   @override
   void dispose() {
-    _disposed = true;
     _timer?.cancel();
     super.dispose();
   }
