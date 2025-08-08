@@ -6,15 +6,20 @@ class TimezoneDropdown extends StatelessWidget {
   final void Function(String?) onChanged;
 
   const TimezoneDropdown({
+    Key? key,
     required this.timezones,
     required this.selectedTimezone,
     required this.onChanged,
-  });
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return DropdownButton<String>(
+    return DropdownButtonFormField<String>(
       value: selectedTimezone,
+      decoration: const InputDecoration(
+        border: OutlineInputBorder(),
+        contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 14),
+      ),
       items: timezones.map((tz) {
         return DropdownMenuItem(
           value: tz,
