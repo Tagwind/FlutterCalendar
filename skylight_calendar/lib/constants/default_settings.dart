@@ -31,7 +31,7 @@ extension SettingKeyExtension on SettingKey {
 
 const Map<SettingKey, SettingDefinition> settingDefinitions = {
   SettingKey.timezone: SettingDefinition(
-    defaultValue: 'America/New_York',
+    defaultValue: '',
     section: 'General',
     type: SettingValueType.string,
   ),

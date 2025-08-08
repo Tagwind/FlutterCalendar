@@ -1,5 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
+
+import '../constants/default_settings.dart';
+import '../providers/current_time_provider.dart';
+import '../providers/settings_provider.dart';
+
 
 class AppHeader extends StatefulWidget {
   final VoidCallback onPrevMonth;
@@ -24,68 +30,49 @@ class AppHeader extends StatefulWidget {
 }
 
 class _AppHeaderState extends State<AppHeader> {
-  late String _time;
 
-  @override
-  void initState() {
-    super.initState();
-    _time = DateFormat.Hm().format(DateTime.now());
-    _updateTime();
-  }
-
-  void _updateTime() {
-    Future.delayed(const Duration(minutes: 1), () {
-      if (mounted) {
-        setState(() {
-          _time = DateFormat.Hm().format(DateTime.now());
-        });
-        _updateTime();
-      }
-    });
-  }
 
   @override
   Widget build(BuildContext context) {
+    final settingsProvider = context.watch<SettingsProvider>();
+    final currentTimeProvider = context.watch<CurrentTimeProvider>();
+
+    // Don't render if settings are not ready or CurrentTimeProvider hasn't run _init yet
+    if (!settingsProvider.isInitialized || currentTimeProvider.now == null) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
+    final now = currentTimeProvider.now!;
+    final timeZoneId = settingsProvider.get(SettingKey.timezone);
+    final formattedTime = DateFormat.Hm().format(now);
+
     return Container(
-      height: double.infinity, // or your preferred height
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: const BoxDecoration(color: Colors.white),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           IntrinsicHeight(
             child: Row(
-              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 Text(
                   widget.title,
                   style: const TextStyle(
-                    fontSize: 36,
-                    fontWeight: FontWeight.w600,
-                  ),
+                      fontSize: 36, fontWeight: FontWeight.w600),
                 ),
                 const SizedBox(width: 12),
-                Center(
-                  child: Text(
-                    _time,
-                    style: const TextStyle(
-                      fontSize: 28,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
+                Text(
+                  "$formattedTime ($timeZoneId)",
+                  style: const TextStyle(
+                      fontSize: 28, fontWeight: FontWeight.bold),
                 ),
                 const SizedBox(width: 12),
-                Center(
-                  child: const Text("72°F & Sunny", style: TextStyle(fontSize: 28)),
-                ),
+                const Text("72°F & Sunny", style: TextStyle(fontSize: 28)),
               ],
             ),
           ),
-
           IntrinsicHeight(
             child: Row(
-              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 const CircleAvatar(
                   radius: 18,
@@ -93,7 +80,6 @@ class _AppHeaderState extends State<AppHeader> {
                   child: Text('T', style: TextStyle(color: Colors.white)),
                 ),
                 const SizedBox(width: 10),
-
                 DropdownButton<String>(
                   value: widget.currentViewType,
                   items: const [
@@ -109,19 +95,12 @@ class _AppHeaderState extends State<AppHeader> {
                   underline: const SizedBox(),
                 ),
                 const SizedBox(width: 10),
-
                 IconButton(
-                  padding: EdgeInsets.zero,
-                  constraints: const BoxConstraints(),
                   onPressed: widget.onPrevMonth,
                   icon: const Icon(Icons.chevron_left),
                 ),
-
                 Text(widget.monthLabel, style: const TextStyle(fontSize: 16)),
-
                 IconButton(
-                  padding: EdgeInsets.zero,
-                  constraints: const BoxConstraints(),
                   onPressed: widget.onNextMonth,
                   icon: const Icon(Icons.chevron_right),
                 ),
@@ -131,7 +110,5 @@ class _AppHeaderState extends State<AppHeader> {
         ],
       ),
     );
-
   }
-
 }

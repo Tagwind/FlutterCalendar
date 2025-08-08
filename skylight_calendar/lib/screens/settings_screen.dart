@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:skylight_calendar/constants/default_settings.dart';
+import 'package:timezone/data/latest.dart' as tz;
+import 'package:timezone/timezone.dart' as tz;
 import '../forms/add_profile_form.dart';
 
 // Import your database provider class
@@ -8,6 +10,7 @@ import '../data/app_database.dart';
 import '../providers/database_provider.dart';
 import '../data/tables/users.dart';
 import '../providers/settings_provider.dart';
+import '../widgets/timezone_dropdown_widget.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -69,14 +72,29 @@ class _SettingsScreenState extends State<SettingsScreen> {
   @override
   void initState() {
     super.initState();
-    final settings = context.read<SettingsProvider>();
-    print(settings.get(SettingKey.timezone));
-    timeZone = settings.get(SettingKey.timezone) ?? 'Central';
-    timeZoneController = TextEditingController(text: timeZone);
+    timeZoneController = TextEditingController();
+    displayNameController = TextEditingController();
+    zipCodeController = TextEditingController();
 
-    calendarDisplayName = settings.get(SettingKey.calendarDisplayName) ?? '';
-    zipCode = settings.get(SettingKey.zipCode) ?? '';
   }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+
+    final provider = context.watch<SettingsProvider>();
+
+    final newTimeZone = provider.get(SettingKey.timezone);
+    if (timeZoneController.text != newTimeZone) {
+      timeZoneController.text = newTimeZone;
+    }
+
+    final newZipCode = provider.get(SettingKey.zipCode);
+    if (zipCodeController.text != newZipCode) {
+      zipCodeController.text = newZipCode;
+    }
+  }
+
 
   @override
   void dispose() {
@@ -109,12 +127,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   void _saveSetting(String key, String value, String section, String type) async {
-    final db = context.read<DatabaseProvider>().db;
-    await db.settingsDao.upsertSetting(
-      key: key,
-      value: value,
-      section: section,
-      type: type,
+    final settingsProvider = context.read<SettingsProvider>();
+    await settingsProvider.update(
+      SettingKey.timezone,
+      value,
     );
   }
 
@@ -221,12 +237,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
             ),
             const SizedBox(height: 16),
             _sectionTitle('Time Zone'),
-            TextField(
-              decoration: const InputDecoration(border: OutlineInputBorder()),
-              controller: timeZoneController,
-              onChanged: (val) {
-                setState(() => timeZone = val);
-                _saveSetting('timezone', val, 'general', 'text');
+            TimezoneDropdown(
+              timezones: tz.timeZoneDatabase.locations.keys.toList(),
+              selectedTimezone: timeZoneController.text,
+              onChanged: (String? newTz) {
+                if (newTz != null) {
+                  setState(() {
+                    timeZone = newTz;
+                    timeZoneController.text = newTz;
+                  });
+                  _saveSetting('timezone', newTz, 'general', 'text');
+                }
               },
             ),
             const SizedBox(height: 16),
