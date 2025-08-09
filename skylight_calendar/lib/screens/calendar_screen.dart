@@ -31,7 +31,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
               children: [
                 SizedBox(height: 20),
                 Text(
-                  "S",
+                  "H",
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,

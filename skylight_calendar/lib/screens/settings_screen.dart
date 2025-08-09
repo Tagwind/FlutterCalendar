@@ -22,7 +22,6 @@ class SettingsScreen extends StatefulWidget {
 class _SettingsScreenState extends State<SettingsScreen> {
   //General
   String wiFiName = "Enter Wi-Fi";
-  String timeZone = "Central";
   late TextEditingController timeZoneController;
   late TextEditingController displayNameController;
   late TextEditingController zipCodeController;
@@ -65,9 +64,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   String selectedSection = 'General';
 
-
   User? selectedUser;
-
 
   @override
   void initState() {
@@ -75,7 +72,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
     timeZoneController = TextEditingController();
     displayNameController = TextEditingController();
     zipCodeController = TextEditingController();
-
   }
 
   @override
@@ -89,12 +85,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
       timeZoneController.text = newTimeZone;
     }
 
+    final newDisplayName = provider.get(SettingKey.calendarDisplayName);
+    if (displayNameController.text != newDisplayName) {
+      displayNameController.text = newDisplayName;
+    }
+
     final newZipCode = provider.get(SettingKey.zipCode);
     if (zipCodeController.text != newZipCode) {
       zipCodeController.text = newZipCode;
     }
   }
-
 
   @override
   void dispose() {
@@ -119,24 +119,23 @@ class _SettingsScreenState extends State<SettingsScreen> {
   void _showAddProfileOverlay(BuildContext context) {
     showDialog(
       context: context,
-      builder: (_) => Dialog(
-        insetPadding: EdgeInsets.all(20),
-        child: AddProfileForm(),
-      ),
+      builder: (_) =>
+          Dialog(insetPadding: EdgeInsets.all(20), child: AddProfileForm()),
     );
   }
 
-  void _saveSetting(String key, String value, String section, String type) async {
+  void _saveSetting(
+    SettingKey key,
+    String value,
+    String section,
+    String type,
+  ) async {
     final settingsProvider = context.read<SettingsProvider>();
-    await settingsProvider.update(
-      SettingKey.timezone,
-      value,
-    );
+    await settingsProvider.update(key, value);
   }
 
   @override
   Widget build(BuildContext context) {
-
     return Scaffold(
       body: Row(
         children: [
@@ -204,7 +203,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
-
   // Right panel content
   Widget _buildSettingsContent() {
     final myTextStyle = const TextStyle(fontSize: 16, color: Colors.black);
@@ -245,10 +243,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
               onChanged: (String? newTz) {
                 if (newTz != null) {
                   setState(() {
-                    timeZone = newTz;
                     timeZoneController.text = newTz;
                   });
-                  _saveSetting('timezone', newTz, 'general', 'text');
+                  _saveSetting(SettingKey.timezone, newTz, 'general', 'text');
                 }
               },
             ),
@@ -256,8 +253,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
             _sectionTitle('Calendar Display Name'),
             TextField(
               decoration: const InputDecoration(border: OutlineInputBorder()),
-              controller: TextEditingController(text: calendarDisplayName),
-              onChanged: (val) => setState(() => calendarDisplayName = val),
+              controller: displayNameController,
+              onChanged: (String? newName) {
+                if (newName != null) {
+                  _saveSetting(
+                    SettingKey.calendarDisplayName,
+                    newName,
+                    'general',
+                    'text',
+                  );
+                }
+              },
             ),
             const SizedBox(height: 16),
             _sectionTitle('Weather Zip Code'),
@@ -335,10 +341,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       value: null,
                       child: Text("➕ Add Profile"),
                     ),
-                    ...profiles.map((user) => DropdownMenuItem<User?>(
-                      value: user,
-                      child: Text(user.name),
-                    )),
+                    ...profiles.map(
+                      (user) => DropdownMenuItem<User?>(
+                        value: user,
+                        child: Text(user.name),
+                      ),
+                    ),
                   ],
                   onChanged: (value) {
                     if (value == null) {

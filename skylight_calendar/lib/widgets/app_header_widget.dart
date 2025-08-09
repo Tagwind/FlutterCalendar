@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
-
+import 'package:skylight_calendar/widgets/header_bar/app_header_clock_widget.dart';
 import '../constants/default_settings.dart';
-import '../providers/current_time_provider.dart';
 import '../providers/settings_provider.dart';
 
 
@@ -35,16 +33,6 @@ class _AppHeaderState extends State<AppHeader> {
   @override
   Widget build(BuildContext context) {
     final settingsProvider = context.watch<SettingsProvider>();
-    final currentTimeProvider = context.watch<CurrentTimeProvider>();
-
-    // Don't render if settings are not ready or CurrentTimeProvider hasn't run _init yet
-    if (!settingsProvider.isInitialized || currentTimeProvider.now == null) {
-      return const Center(child: CircularProgressIndicator());
-    }
-
-    final now = currentTimeProvider.now!;
-    final timeZoneId = settingsProvider.get(SettingKey.timezone);
-    final formattedTime = DateFormat.Hm().format(now);
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
@@ -56,16 +44,12 @@ class _AppHeaderState extends State<AppHeader> {
             child: Row(
               children: [
                 Text(
-                  widget.title,
+                  settingsProvider.get(SettingKey.calendarDisplayName),
                   style: const TextStyle(
                       fontSize: 36, fontWeight: FontWeight.w600),
                 ),
                 const SizedBox(width: 12),
-                Text(
-                  "$formattedTime ($timeZoneId)",
-                  style: const TextStyle(
-                      fontSize: 28, fontWeight: FontWeight.bold),
-                ),
+                const AppHeaderClock(),
                 const SizedBox(width: 12),
                 const Text("72°F & Sunny", style: TextStyle(fontSize: 28)),
               ],
