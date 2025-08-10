@@ -254,11 +254,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
             TextField(
               decoration: const InputDecoration(border: OutlineInputBorder()),
               controller: displayNameController,
-              onChanged: (String? newName) {
-                if (newName != null) {
+              onChanged: (String? newVal) {
+                if (newVal != null) {
                   _saveSetting(
                     SettingKey.calendarDisplayName,
-                    newName,
+                    newVal,
                     'general',
                     'text',
                   );
@@ -269,8 +269,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
             _sectionTitle('Weather Zip Code'),
             TextField(
               decoration: const InputDecoration(border: OutlineInputBorder()),
-              controller: TextEditingController(text: zipCode),
-              onChanged: (val) => setState(() => zipCode = val),
+              controller: zipCodeController,
+              onChanged: (String? newVal) {
+                if (newVal != null) {
+                  _saveSetting(
+                    SettingKey.zipCode,
+                    newVal,
+                    'general',
+                    'text',
+                  );
+                }
+              },
             ),
             const SizedBox(height: 16),
             _sectionTitle('Start Week On'),

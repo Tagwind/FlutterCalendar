@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:skylight_calendar/widgets/header_bar/app_header_clock_widget.dart';
 import '../constants/default_settings.dart';
 import '../providers/settings_provider.dart';
+import 'header_bar/app_header_weather_widget.dart';
 
 
 class AppHeader extends StatefulWidget {
@@ -48,10 +49,10 @@ class _AppHeaderState extends State<AppHeader> {
                   style: const TextStyle(
                       fontSize: 36, fontWeight: FontWeight.w600),
                 ),
-                const SizedBox(width: 12),
+                const SizedBox(width: 20),
                 const AppHeaderClock(),
-                const SizedBox(width: 12),
-                const Text("72°F & Sunny", style: TextStyle(fontSize: 28)),
+                const SizedBox(width: 20),
+                const AppHeaderWeather(),
               ],
             ),
           ),
