@@ -21,12 +21,12 @@ class AppHeaderWeather extends StatelessWidget {
       return Row(
         children: [
           Image.network(
-            weather!.iconUrl,
+            weather?.current.icon ?? '',
             width: 40,
             height: 40,
           ),
           const SizedBox(width: 8),
-          Text('${weather?.tempF.toStringAsFixed(1)}°F'),
+          Text('${weather?.current.tempF.toStringAsFixed(1)}°F' ?? ''),
         ],
       );
     }

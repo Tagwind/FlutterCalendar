@@ -48,7 +48,7 @@ class WeatherProvider with ChangeNotifier {
     notifyListeners();
 
     final url = Uri.parse(
-      'https://api.weatherapi.com/v1/current.json?key=$_apiKey&q=$zipCode',
+      'https://api.weatherapi.com/v1/forecast.json?key=$_apiKey&q=$zipCode&days=3&aqi=yes&alerts=yes',
     );
     final response = await http.get(url);
 
