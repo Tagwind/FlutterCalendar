@@ -375,19 +375,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
             return Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _sectionTitle('Google Calendar Integration'),
-                ListTile(
-                  contentPadding: EdgeInsets.zero,
-                  title: Text(
-                    isSignedIn ? 'Signed in with Google' : 'Not signed in',
-                  ),
-                  trailing: ElevatedButton(
-                    onPressed: toggleSignIn,
-                    child: Text(isSignedIn ? 'Sign out' : 'Sign in'),
-                  ),
-                ),
-                SizedBox(height: 16),
-                _sectionTitle('Calendar Profiles'),
+
+                _sectionTitle('Profiles'),
                 DropdownButton<User?>(
                   isExpanded: true,
                   value: selectedUser,
@@ -398,7 +387,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       child: Text("➕ Add Profile"),
                     ),
                     ...profiles.map(
-                      (user) => DropdownMenuItem<User?>(
+                          (user) => DropdownMenuItem<User?>(
                         value: user,
                         child: Text(user.name),
                       ),
@@ -414,6 +403,19 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     }
                   },
                 ),
+                SizedBox(height: 16),
+                _sectionTitle('Google Calendar Integration'),
+                ListTile(
+                  contentPadding: EdgeInsets.zero,
+                  title: Text(
+                    isSignedIn ? 'Signed in with Google' : 'Not signed in',
+                  ),
+                  trailing: ElevatedButton(
+                    onPressed: toggleSignIn,
+                    child: Text(isSignedIn ? 'Sign out' : 'Sign in'),
+                  ),
+                ),
+
               ],
             );
           },

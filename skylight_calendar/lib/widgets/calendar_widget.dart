@@ -11,9 +11,11 @@ class CalendarWidget extends StatefulWidget {
 }
 
 class _CalendarWidgetState extends State<CalendarWidget> {
-  DateTime _focusedDay = DateTime.utc(2025, 7, 21);
+  DateTime _focusedDay = DateTime.now();
   DateTime? _selectedDay;
   String _viewType = "month";
+
+  CalendarFormat _calendarFormat = CalendarFormat.month;
 
   List<CalendarEvent> _getEventsForDay(DateTime day) {
     final normalizedDay = DateTime.utc(day.year, day.month, day.day);
@@ -186,22 +188,36 @@ class _CalendarWidgetState extends State<CalendarWidget> {
       appBar: PreferredSize(
         preferredSize: Size.fromHeight(115),
         child: AppHeader(
-          title: "Highlight Calendar",
           monthLabel: DateFormat.yMMMM().format(_focusedDay),
           currentViewType: _viewType,
           onViewTypeChanged: (view) {
             setState(() {
               _viewType = view;
+              // Update calendar format depending on the viewType
+              if (_viewType == "month") {
+                _calendarFormat = CalendarFormat.month;
+              } else if (_viewType == "week") {
+                _calendarFormat = CalendarFormat.week;
+              }
             });
           },
           onPrevMonth: () {
             setState(() {
-              _focusedDay = DateTime(_focusedDay.year, _focusedDay.month - 1);
+              // Change focusedDay depending on the view
+              if (_viewType == "month") {
+                _focusedDay = DateTime(_focusedDay.year, _focusedDay.month - 1);
+              } else if (_viewType == "week") {
+                _focusedDay = _focusedDay.subtract(Duration(days: 7));
+              }
             });
           },
           onNextMonth: () {
             setState(() {
-              _focusedDay = DateTime(_focusedDay.year, _focusedDay.month + 1);
+              if (_viewType == "month") {
+                _focusedDay = DateTime(_focusedDay.year, _focusedDay.month + 1);
+              } else if (_viewType == "week") {
+                _focusedDay = _focusedDay.add(Duration(days: 7));
+              }
             });
           },
         ),
@@ -215,14 +231,14 @@ class _CalendarWidgetState extends State<CalendarWidget> {
               firstDay: DateTime.utc(2020, 1, 1),
               lastDay: DateTime.utc(2099, 12, 31),
               focusedDay: _focusedDay,
-              selectedDayPredicate: (_) => false,
+              selectedDayPredicate: (day) => isSameDay(_selectedDay, day),
               onDaySelected: (selectedDay, focusedDay) {
                 setState(() {
                   _selectedDay = selectedDay;
                   _focusedDay = focusedDay;
                 });
               },
-              calendarFormat: CalendarFormat.month,
+              calendarFormat: _calendarFormat,
               startingDayOfWeek: StartingDayOfWeek.sunday,
               rowHeight: dayRowHeight,
               daysOfWeekHeight: headerHeight,
@@ -244,7 +260,7 @@ class _CalendarWidgetState extends State<CalendarWidget> {
                 outsideBuilder: (context, day, focusedDay) =>
                     _buildDayCell(day, isOutside: true, weekday: day.weekday),
                 markerBuilder: (context, day, events) =>
-                    const SizedBox.shrink(), // No black dots
+                const SizedBox.shrink(),
                 dowBuilder: (context, day) {
                   return Container(
                     decoration: BoxDecoration(
@@ -252,9 +268,9 @@ class _CalendarWidgetState extends State<CalendarWidget> {
                         right: day.weekday == DateTime.saturday
                             ? BorderSide.none
                             : BorderSide(
-                                color: Colors.grey.shade400,
-                                width: 0.5,
-                              ),
+                          color: Colors.grey.shade400,
+                          width: 0.5,
+                        ),
                         bottom: BorderSide(
                           color: Colors.grey.shade400,
                           width: 0.5,

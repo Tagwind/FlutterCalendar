@@ -10,7 +10,6 @@ class AppHeader extends StatefulWidget {
   final VoidCallback onPrevMonth;
   final VoidCallback onNextMonth;
   final String monthLabel;
-  final String title;
   final Function(String) onViewTypeChanged;
   final String currentViewType;
 
@@ -19,7 +18,6 @@ class AppHeader extends StatefulWidget {
     required this.onPrevMonth,
     required this.onNextMonth,
     required this.monthLabel,
-    required this.title,
     required this.onViewTypeChanged,
     required this.currentViewType,
   }) : super(key: key);
