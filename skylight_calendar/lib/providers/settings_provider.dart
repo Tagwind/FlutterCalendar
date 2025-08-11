@@ -83,6 +83,9 @@ class SettingsProvider extends ChangeNotifier {
   String get(SettingKey key) => _settings[key]!;
 
   Future<void> update(SettingKey key, String value) async {
+    final oldValue = _settings[key];
+    //Skip updated if the value didnt actually change
+    if(oldValue == value) return;
     _settings[key] = value;
     await _db?.settingsDao.upsertSetting(
       key: key.keyString,

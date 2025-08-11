@@ -20,9 +20,11 @@ enum SettingValueType {
 
 enum SettingKey {
   timezone,
+  timeFormat,
   calendarDisplayName,
   zipCode,
   weekStartDay,
+  weatherUnits,
 }
 
 extension SettingKeyExtension on SettingKey {
@@ -30,13 +32,18 @@ extension SettingKeyExtension on SettingKey {
 }
 
 const Map<SettingKey, SettingDefinition> settingDefinitions = {
+  SettingKey.calendarDisplayName: SettingDefinition(
+    defaultValue: 'Highlight Calendar',
+    section: 'General',
+    type: SettingValueType.string,
+  ),
   SettingKey.timezone: SettingDefinition(
     defaultValue: '',
     section: 'General',
     type: SettingValueType.string,
   ),
-  SettingKey.calendarDisplayName: SettingDefinition(
-    defaultValue: 'Highlight Calendar',
+  SettingKey.timeFormat: SettingDefinition(
+    defaultValue: '12',
     section: 'General',
     type: SettingValueType.string,
   ),
@@ -47,6 +54,11 @@ const Map<SettingKey, SettingDefinition> settingDefinitions = {
   ),
   SettingKey.weekStartDay: SettingDefinition(
     defaultValue: 'Sunday',
+    section: 'General',
+    type: SettingValueType.string,
+  ),
+  SettingKey.weatherUnits: SettingDefinition(
+    defaultValue: 'F',
     section: 'General',
     type: SettingValueType.string,
   ),

@@ -3,7 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
+import '../../constants/default_settings.dart';
 import '../../providers/current_time_provider.dart';
+import '../../providers/settings_provider.dart';
 
 class AppHeaderClock extends StatelessWidget {
   const AppHeaderClock({super.key});
@@ -14,8 +16,14 @@ class AppHeaderClock extends StatelessWidget {
     final now = context.select<CurrentTimeProvider, DateTime>(
           (ctp) => ctp.now,
     );
+    final timeFormat = context.select<SettingsProvider, String?>(
+          (sp) => sp.get(SettingKey.timeFormat),
+    );
 
-    final formattedTime = DateFormat.Hm().format(now);
+    // Decide format pattern
+    final pattern = (timeFormat == '12') ? 'h:mm a' : 'HH:mm';
+    final formattedTime = DateFormat(pattern).format(now);
+
 
     return Text(
       formattedTime,

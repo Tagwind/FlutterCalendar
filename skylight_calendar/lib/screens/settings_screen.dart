@@ -10,7 +10,7 @@ import '../data/app_database.dart';
 import '../providers/database_provider.dart';
 import '../data/tables/users.dart';
 import '../providers/settings_provider.dart';
-import '../widgets/timezone_dropdown_widget.dart';
+import '../widgets/settings_menu/timezone_dropdown_widget.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -25,6 +25,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
   late TextEditingController timeZoneController;
   late TextEditingController displayNameController;
   late TextEditingController zipCodeController;
+  late TextEditingController timeFormatController;
+  late TextEditingController weatherUnitsController;
+
   String calendarDisplayName = "Highlight Calendar";
   String zipCode = "Enter a ZIP code to get weather data";
   String startWeekOn = "Sunday";
@@ -66,12 +69,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   User? selectedUser;
 
+  final List<String> _TimeFormatOptions = ['12', '24'];
+  final List<String> _WeatherUnitOptions = ['F', 'C'];
+
   @override
   void initState() {
     super.initState();
     timeZoneController = TextEditingController();
     displayNameController = TextEditingController();
     zipCodeController = TextEditingController();
+    timeFormatController = TextEditingController();
+    weatherUnitsController = TextEditingController();
   }
 
   @override
@@ -93,6 +101,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
     final newZipCode = provider.get(SettingKey.zipCode);
     if (zipCodeController.text != newZipCode) {
       zipCodeController.text = newZipCode;
+    }
+
+    final newTimeFormat = provider.get(SettingKey.timeFormat);
+    if (timeFormatController.text != newTimeFormat) {
+      timeFormatController.text = newTimeFormat;
+    }
+
+    final newWeatherUnits = provider.get(SettingKey.weatherUnits);
+    if (weatherUnitsController.text != newWeatherUnits) {
+      weatherUnitsController.text = newWeatherUnits;
     }
   }
 
@@ -219,37 +237,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
               onChanged: (val) => setState(() => wiFiName = val),
             ),
             const SizedBox(height: 16),
-            _sectionTitle('Profile Color'),
-            Row(
-              children: [
-                const Text("Choose color: "),
-                const SizedBox(width: 12),
-                GestureDetector(
-                  onTap: () {
-                    // Color picker dialog goes here
-                  },
-                  child: CircleAvatar(
-                    radius: 16,
-                    backgroundColor: profileColor,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 16),
-            _sectionTitle('Time Zone'),
-            TimezoneDropdown(
-              timezones: tz.timeZoneDatabase.locations.keys.toList(),
-              selectedTimezone: timeZoneController.text,
-              onChanged: (String? newTz) {
-                if (newTz != null) {
-                  setState(() {
-                    timeZoneController.text = newTz;
-                  });
-                  _saveSetting(SettingKey.timezone, newTz, 'general', 'text');
-                }
-              },
-            ),
-            const SizedBox(height: 16),
             _sectionTitle('Calendar Display Name'),
             TextField(
               decoration: const InputDecoration(border: OutlineInputBorder()),
@@ -266,6 +253,46 @@ class _SettingsScreenState extends State<SettingsScreen> {
               },
             ),
             const SizedBox(height: 16),
+            _sectionTitle('Time Zone'),
+            TimezoneDropdown(
+              timezones: tz.timeZoneDatabase.locations.keys.toList(),
+              selectedTimezone: timeZoneController.text,
+              onChanged: (String? newTz) {
+                if (newTz != null) {
+                  setState(() {
+                    timeZoneController.text = newTz;
+                  });
+                  _saveSetting(SettingKey.timezone, newTz, 'general', 'text');
+                }
+              },
+            ),
+            const SizedBox(height: 16),
+            _sectionTitle('Time Format'),
+            DropdownButtonFormField<String>(
+              value: timeFormatController.text,
+              decoration: const InputDecoration(
+                border: OutlineInputBorder(),
+                isDense: true, // Matches TextField spacing
+                contentPadding: EdgeInsets.symmetric(vertical: 12, horizontal: 12),
+              ),
+              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.normal, // Adjust weight to match
+              ),
+              hint: Text('Changes Time Display To Be 12 or 24 Hour'), // Optional hint text
+              items: _TimeFormatOptions.map((String option) {
+                return DropdownMenuItem<String>(
+                  value: option,
+                  child: Text(option),
+                );
+              }).toList(),
+              onChanged: (String? newValue) {
+                setState(() {
+                  timeFormatController.text = newValue ?? '12';
+                });
+                _saveSetting(SettingKey.timeFormat, newValue ?? '12', 'general', 'text');
+              },
+            ),
+            const SizedBox(height: 16),
             _sectionTitle('Weather Zip Code'),
             TextField(
               decoration: const InputDecoration(border: OutlineInputBorder()),
@@ -279,6 +306,32 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     'text',
                   );
                 }
+              },
+            ),
+            const SizedBox(height: 16),
+            _sectionTitle('Weather Units'),
+            DropdownButtonFormField<String>(
+              value: weatherUnitsController.text,
+              decoration: const InputDecoration(
+                border: OutlineInputBorder(),
+                isDense: true, // Matches TextField spacing
+                contentPadding: EdgeInsets.symmetric(vertical: 12, horizontal: 12),
+              ),
+              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.normal, // Adjust weight to match
+              ),
+              hint: Text('Changes Time Display To Be 12 or 24 Hour'), // Optional hint text
+              items: _WeatherUnitOptions.map((String option) {
+                return DropdownMenuItem<String>(
+                  value: option,
+                  child: Text(option),
+                );
+              }).toList(),
+              onChanged: (String? newValue) {
+                setState(() {
+                  weatherUnitsController.text = newValue ?? 'F';
+                });
+                _saveSetting(SettingKey.weatherUnits, newValue ?? 'F', 'general', 'text');
               },
             ),
             const SizedBox(height: 16),
@@ -309,13 +362,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               onChanged: (val) => setState(() => autoBrightness = val),
               title: const Text('Auto Brightness'),
             ),
-            const SizedBox(height: 16),
-            _sectionTitle('Calendar Display Name'),
-            TextField(
-              decoration: const InputDecoration(border: OutlineInputBorder()),
-              controller: TextEditingController(text: calendarDisplayName),
-              onChanged: (val) => setState(() => calendarDisplayName = val),
-            ),
+
           ],
         );
 
